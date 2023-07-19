@@ -4,6 +4,7 @@ import { postPathsQuery, postQuery } from "../../../../../sanity/lib/queries";
 import { client } from "../../../../../sanity/lib/client";
 import { urlForImage } from "../../../../../sanity/lib/image";
 import PortableText from "react-portable-text";
+import { Key } from "react";
 
 // import RichTextComponents from "@/components/RichTextComponents";
 
@@ -13,7 +14,7 @@ type Props = {
   };
 };
 
-export const revalidate = 30 
+export const revalidate = 30;
 export async function generateStaticParams() {
   const slugs: Post[] = await client.fetch(postPathsQuery);
   const slugRoutes = slugs.map((slug) => slug.slug.current);
@@ -24,9 +25,10 @@ export async function generateStaticParams() {
 
 async function Post({ params: { slug } }: Props) {
   const post = await client.fetch(postQuery, { slug });
+
   return (
-    <article className="px-10 pb-28">
-      <section className="space-y-2 border border-[#f7ab0a] text-white">
+    <article className="px-5 md:px-10 pb-28">
+      <section className="border border-[#f7ab0a] text-white">
         <div className="relative min-h-56 flex flex-col md:flex-row justify-between">
           <div className="absolute top-0 h-full w-full opacity-10 blur-sm p-10">
             <Image
@@ -38,11 +40,11 @@ async function Post({ params: { slug } }: Props) {
           </div>
         </div>
         <section className="p-5 bg-[#f7ab0a] w-full">
-          <div className="flex flex-col md:flex-row justify-between gap-y-5">
+          <div className="flex flex-col items-start lg:flex-row justify-between gap-y-5">
             <div>
               <h1 className="text-4xl font-extrabold">{post.title}</h1>
-              <p>
-                {" "}
+              <p className="italic text-sm py-2">
+                Posted{" "}
                 {new Date(post._createdAt).toLocaleDateString("en-US", {
                   day: "numeric",
                   month: "long",
@@ -67,16 +69,21 @@ async function Post({ params: { slug } }: Props) {
           </div>
 
           <div>
-            <h2 className="italic pt-10">{post.description}</h2>
+            <h2 className="italic pt-1 lg:pt-10">{post.description}</h2>
             <div className="flex items-center justify-end space-x-2">
-              {/* {post.categories.map(({ category }: any) => (
-                <p
-                  key={category._id}
-                  className="bg-gray-800 px-3 py-1 mt-4 rounded-full text-sm text-white font-semibold"
-                >
-                  {category.title}
-                </p>
-              ))} */}
+              {post.categories.map(
+                (category: {
+                  _id: Key | null | undefined;
+                  title: string | null | undefined;
+                }) => (
+                  <p
+                    key={category._id}
+                    className="bg-gray-800 px-3 py-1 mt-4 rounded-full text-sm text-white font-semibold"
+                  >
+                    {category.title}
+                  </p>
+                )
+              )}
             </div>
           </div>
         </section>
@@ -88,6 +95,7 @@ async function Post({ params: { slug } }: Props) {
         projectId={process.env.SANITY_PROJECT_ID}
         dataset={process.env.SANITY_DATASET}
         serializers={{
+          normal: ({ children }: any) => <p className="py-2">{children}</p>,
           h1: ({ children }: any) => (
             <h1 className="text-5xl py-10 font-bold">{children}</h1>
           ),
@@ -98,18 +106,19 @@ async function Post({ params: { slug } }: Props) {
             <h3 className="text-3xl py-10 font-bold">{children}</h3>
           ),
           h4: ({ children }: any) => (
-            <h4 className="text-4xl py-10 font-bold">{children}</h4>
+            <h4 className="text-2xl py-10 font-bold">{children}</h4>
           ),
           blockquote: ({ children }: any) => (
             <blockquote className="border-l-[#f7ab0a] border-l-4 pl-5 py-5 my-5">
               {children}
             </blockquote>
           ),
-          image: ({ value }: any) => {
+          image: ({ asset }: any) => {
             return (
               <div className="relative w-full h-96 m-10 mx-auto ">
+                <p>{asset._ref}</p>
                 <Image
-                  src={urlForImage(value).url()}
+                  src={urlForImage(asset._ref).url()}
                   alt="Blog Post Image"
                   fill
                 />
