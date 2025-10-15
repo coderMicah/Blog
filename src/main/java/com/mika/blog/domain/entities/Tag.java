@@ -1,6 +1,8 @@
 package com.mika.blog.domain.entities;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -16,13 +18,17 @@ public class Tag {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @ManyToMany(mappedBy = "tags")
+    private Set<Post> posts = new HashSet<>();
+
     // --- Constructors ---
     public Tag() {
     }
 
-    public Tag(UUID id, String name) {
+    public Tag(UUID id, String name, Set<Post> posts) {
         this.id = id;
         this.name = name;
+        this.posts = posts != null ? posts : new HashSet<>();
     }
 
     // --- Getters ---
@@ -34,6 +40,10 @@ public class Tag {
         return name;
     }
 
+    public Set<Post> getPosts() {
+        return posts;
+    }
+
     // --- Setters ---
     public void setId(UUID id) {
         this.id = id;
@@ -43,10 +53,17 @@ public class Tag {
         this.name = name;
     }
 
-    // --- Manual Builder ---
+    public void setPosts(Set<Post> posts) {
+        this.posts = posts;
+    }
+
+    // --- Relationship helpers ---
+
+    // --- Builder ---
     public static class Builder {
         private UUID id;
         private String name;
+        private Set<Post> posts = new HashSet<>();
 
         public Builder id(UUID id) {
             this.id = id;
@@ -58,8 +75,13 @@ public class Tag {
             return this;
         }
 
-        public Category build() {
-            return new Category(id, name);
+        public Builder posts(Set<Post> posts) {
+            this.posts = posts;
+            return this;
+        }
+
+        public Tag build() {
+            return new Tag(id, name, posts);
         }
     }
 
@@ -67,23 +89,13 @@ public class Tag {
         return new Builder();
     }
 
-    // --- toString ---
-    @Override
-    public String toString() {
-        return "Category{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
-    }
-
-    // --- equals & hashCode (all properties) ---
+    // --- equals & hashCode (exclude posts) ---
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (o == null || getClass() != o.getClass())
+        if (!(o instanceof Tag tag))
             return false;
-        Tag tag = (Tag) o;
         return Objects.equals(id, tag.id) &&
                 Objects.equals(name, tag.name);
     }
@@ -91,5 +103,14 @@ public class Tag {
     @Override
     public int hashCode() {
         return Objects.hash(id, name);
+    }
+
+    // --- toString (exclude posts) ---
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

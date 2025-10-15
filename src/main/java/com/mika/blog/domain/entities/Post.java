@@ -1,7 +1,9 @@
 package com.mika.blog.domain.entities;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import com.mika.blog.domain.PostStatus;
@@ -29,24 +31,39 @@ public class Post {
     @Column(nullable = false)
     private Integer readingTime;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @ManyToMany
+    @JoinTable(name = "posts_tags", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<Tag> tags = new HashSet<>();
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // --- No-args constructor (required by JPA) ---
+    // --- Constructors ---
     public Post() {
     }
 
-    // --- All-args constructor ---
     public Post(UUID id, String title, String content, PostStatus status, Integer readingTime,
+            User author, Category category, Set<Tag> tags,
             LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.status = status;
         this.readingTime = readingTime;
+        this.author = author;
+        this.category = category;
+        this.tags = tags != null ? tags : new HashSet<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -70,6 +87,18 @@ public class Post {
 
     public Integer getReadingTime() {
         return readingTime;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -101,6 +130,18 @@ public class Post {
         this.readingTime = readingTime;
     }
 
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
+    }
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
@@ -109,14 +150,96 @@ public class Post {
         this.updatedAt = updatedAt;
     }
 
-    // --- equals() & hashCode() (include all fields) ---
+    // --- Helper methods for tags ---
+    public void addTag(Tag tag) {
+        tags.add(tag);
+        tag.getPosts().add(this);
+    }
+
+    public void removeTag(Tag tag) {
+        tags.remove(tag);
+        tag.getPosts().remove(this);
+    }
+
+    // --- Builder ---
+    public static class Builder {
+        private UUID id;
+        private String title;
+        private String content;
+        private PostStatus status;
+        private Integer readingTime;
+        private User author;
+        private Category category;
+        private Set<Tag> tags = new HashSet<>();
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+
+        public Builder id(UUID id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Builder content(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public Builder status(PostStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder readingTime(Integer readingTime) {
+            this.readingTime = readingTime;
+            return this;
+        }
+
+        public Builder author(User author) {
+            this.author = author;
+            return this;
+        }
+
+        public Builder category(Category category) {
+            this.category = category;
+            return this;
+        }
+
+        public Builder tags(Set<Tag> tags) {
+            this.tags = tags;
+            return this;
+        }
+
+        public Builder createdAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder updatedAt(LocalDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        public Post build() {
+            return new Post(id, title, content, status, readingTime, author, category, tags, createdAt, updatedAt);
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // --- equals & hashCode (exclude author, category, tags) ---
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (o == null || getClass() != o.getClass())
+        if (!(o instanceof Post post))
             return false;
-        Post post = (Post) o;
         return Objects.equals(id, post.id) &&
                 Objects.equals(title, post.title) &&
                 Objects.equals(content, post.content) &&
@@ -131,7 +254,7 @@ public class Post {
         return Objects.hash(id, title, content, status, readingTime, createdAt, updatedAt);
     }
 
-    // --- toString() (optional, useful for debugging) ---
+    // --- toString (exclude author, category, tags) ---
     @Override
     public String toString() {
         return "Post{" +
@@ -145,7 +268,7 @@ public class Post {
                 '}';
     }
 
-    // this will be called when entity is created
+    // --- Lifecycle hooks ---
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -153,7 +276,6 @@ public class Post {
         this.updatedAt = now;
     }
 
-    // this will be called when entity is updated
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();

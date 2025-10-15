@@ -1,6 +1,8 @@
 package com.mika.blog.domain.entities;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -23,6 +25,9 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -30,12 +35,13 @@ public class User {
     public User() {
     }
 
-    public User(UUID id, String email, String password, String name, LocalDateTime createdAt) {
+    public User(UUID id, String email, String password, String name, LocalDateTime createdAt, List<Post> posts) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.name = name;
         this.createdAt = createdAt;
+        this.posts = posts != null ? posts : new ArrayList<>();
     }
 
     // --- Getters ---
@@ -87,6 +93,7 @@ public class User {
         private String password;
         private String name;
         private LocalDateTime createdAt;
+        private List<Post> posts = new ArrayList<>();
 
         public Builder id(UUID id) {
             this.id = id;
@@ -113,9 +120,15 @@ public class User {
             return this;
         }
 
-        public User build() {
-            return new User(id, email, password, name, createdAt);
+        public Builder posts(List<Post> posts) {
+            this.posts = posts;
+            return this;
         }
+
+        public User build() {
+            return new User(id, email, password, name, createdAt, posts);
+        }
+
     }
 
     public static Builder builder() {
