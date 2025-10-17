@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.mika.blog.services.AuthenticationService;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -44,7 +45,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return Jwts.builder()
                 .setClaims(claims).setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() * jwtExpiryMs))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiryMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
 
@@ -52,5 +53,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
+
+    private String extratUsernameFromToken(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
+        return claims.getSubject();
+    }
+
+    @Override
+    public UserDetails validateToken(String token) {
+        String username = extratUsernameFromToken(token);
+        return userDetailsService.loadUserByUsername(username);
     }
 }

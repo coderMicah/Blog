@@ -19,7 +19,26 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
     private final AuthenticationService authenticationService;
 
-    @PostMapping
+    // 🔹 Register new user
+    // @PostMapping("/register")
+    // public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    // if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+    // return ResponseEntity.badRequest().body("Email already exists");
+    // }
+
+    // User user = User.builder()
+    // .name(request.getName())
+    // .email(request.getEmail())
+    // .password(passwordEncoder.encode(request.getPassword()))
+    // .build();
+
+    // userRepository.save(user);
+
+    // String token = authenticationService.generateToken(user);
+    // return ResponseEntity.ok(new AuthResponse(token));
+    // }
+
+    @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
         UserDetails userDetails = authenticationService.authenticate(loginRequest.getEmail(),
                 loginRequest.getPassword());

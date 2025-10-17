@@ -2,6 +2,7 @@ package com.mika.blog.security;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BlogUserDetails implements UserDetails {
     private final User user;
+
+    public UUID getId() {
+        return user.getId();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -51,4 +56,5 @@ public class BlogUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }
