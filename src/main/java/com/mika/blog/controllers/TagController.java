@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mika.blog.domain.dtos.CreateTagsRequest;
-import com.mika.blog.domain.dtos.TagResponse;
+import com.mika.blog.domain.dtos.TagDto;
 import com.mika.blog.domain.entities.Tag;
 import com.mika.blog.mappers.TagMapper;
 import com.mika.blog.services.TagService;
@@ -31,16 +31,16 @@ public class TagController {
     private final TagMapper tagMapper;
 
     @GetMapping
-    public ResponseEntity<List<TagResponse>> getAllTags() {
+    public ResponseEntity<List<TagDto>> getAllTags() {
         List<Tag> tags = tagService.getAllTags();
-        List<TagResponse> tagResponses = tags.stream().map(tagMapper::toTagResponse).toList();
+        List<TagDto> tagResponses = tags.stream().map(tagMapper::toTagResponse).toList();
         return ResponseEntity.ok(tagResponses);
     }
 
     @PostMapping
-    public ResponseEntity<List<TagResponse>> createTag(@Valid @RequestBody CreateTagsRequest createTagsRequest) {
+    public ResponseEntity<List<TagDto>> createTag(@Valid @RequestBody CreateTagsRequest createTagsRequest) {
         List<Tag> savedTags = tagService.createTags(createTagsRequest.getNames());
-        List<TagResponse> createdTagResponses = savedTags.stream().map(tag -> tagMapper.toTagResponse(tag)).toList();
+        List<TagDto> createdTagResponses = savedTags.stream().map(tag -> tagMapper.toTagResponse(tag)).toList();
         return new ResponseEntity<>(createdTagResponses, HttpStatus.CREATED);
     }
 

@@ -33,7 +33,7 @@ public class User {
     private String name;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    // @Builder.Default
+    @Builder.Default
     private List<Post> posts = new ArrayList<>();
 
     @Column(nullable = false)

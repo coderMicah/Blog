@@ -26,7 +26,7 @@ public class Tag {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
-    // @Builder.Default
+    @Builder.Default
     private Set<Post> posts = new HashSet<>();
 
     // --- equals & hashCode excluding posts ---

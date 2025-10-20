@@ -10,6 +10,7 @@ import com.mika.blog.domain.entities.Category;
 import com.mika.blog.repositories.CategoryRepository;
 import com.mika.blog.services.CategoryService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +45,12 @@ public class CategoryServiceImpl implements CategoryService {
             repository.deleteById(category.get().getId());
         }
 
+    }
+
+    @Override
+    public Category getCategoryById(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
     }
 
 }

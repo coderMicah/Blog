@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mika.blog.domain.dtos.ApiErrorResponse;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -53,7 +54,7 @@ public class ErrorController {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiErrorResponse> badCredentialsException(BadCredentialsException ex) {
+    public ResponseEntity<ApiErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
 
         ApiErrorResponse error = ApiErrorResponse
                 .builder()
@@ -62,5 +63,17 @@ public class ErrorController {
                 .build();
 
         return new ResponseEntity<ApiErrorResponse>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+
+        ApiErrorResponse error = ApiErrorResponse
+                .builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<ApiErrorResponse>(error, HttpStatus.NOT_FOUND);
     }
 }
